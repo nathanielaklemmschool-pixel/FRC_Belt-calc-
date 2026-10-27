@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Belt Calc</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#000; --panel:#071226; --panel2:#0d1a36; --line:rgba(30,64,175,.7); --line2:rgba(30,64,175,.4); --blue:#3b82f6; --blue2:#1d4ed8; --blue3:#60a5fa; --txt:#fff; --muted:rgba(191,219,254,.8); --muted2:rgba(191,219,254,.6); --orange:#fb923c; box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  html { scroll-padding-top:env(safe-area-inset-top,0px); background:#000; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font-family:"IBM Plex Sans",sans-serif; -webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(rgba(30,64,175,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(30,64,175,.22) 1px,transparent 1px); background-size:32px 32px; }
+  ::selection { background:var(--blue2); color:#fff; }
+  .mono { font-family:"IBM Plex Mono",monospace; }
+  .heading { font-family:"Outfit",sans-serif; }
+  header { position:sticky; top:env(safe-area-inset-top,0px); z-index:20; border-bottom:1px solid var(--line); background:rgba(7,18,38,.85); backdrop-filter:blur(16px); }
+  .wrap { max-width:1500px; margin:0 auto; padding:16px 24px; }
+  header .wrap { display:flex; align-items:center; gap:16px; }
+  .logo { width:40px; height:40px; border:1px solid #1d4ed8; background:rgba(29,78,216,.2); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--blue3); }
+  h1 { margin:0; font-size:24px; font-weight:900; letter-spacing:-.02em; }
+  .eyebrow { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+  main { display:grid; grid-template-columns:1fr; gap:24px; }
+  @media (min-width:1024px){ main { grid-template-columns:4fr 8fr; } }
+  .col { display:flex; flex-direction:column; gap:24px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; }
+  .row { display:flex; gap:16px; align-items:flex-end; justify-content:space-between; }
+  .seg { display:flex; gap:4px; margin-top:6px; }
+  button { font-family:"IBM Plex Mono",monospace; cursor:pointer; border-radius:8px; border:1px solid rgba(30,64,175,.8); background:transparent; color:#93c5fd; padding:8px 14px; font-size:13px; transition:background-color .2s,border-color .2s,color .2s; }
+  button:hover { background:rgba(23,37,84,.5); }
+  button.on { background:#1d4ed8; border-color:var(--blue); color:#fff; }
+  button.primary { background:#1d4ed8; border-color:var(--blue); color:#fff; font-family:"IBM Plex Sans",sans-serif; font-weight:500; }
+  button.primary:hover { background:#2563eb; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  button.tiny { padding:2px 8px; font-size:11px; }
+  button.lock { padding:4px 8px; font-size:11px; }
+  button.lock.locked { border-color:rgba(249,115,22,.7); color:var(--orange); }
+  .pulley { border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.4); padding:16px; margin-top:12px; }
+  .pulley.driver { border-color:rgba(37,99,235,.7); background:rgba(23,37,84,.3); }
+  .pulley-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .pulley-head .name { display:flex; align-items:center; gap:8px; font-family:"Outfit",sans-serif; font-weight:600; font-size:14px; letter-spacing:.04em; }
+  .badge { width:24px; height:24px; border-radius:6px; border:1px solid #1e40af; display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#93c5fd; }
+  .driver .badge { background:#2563eb; border-color:#2563eb; color:#fff; }
+  .fields { display:grid; gap:12px; grid-template-columns:repeat(3,1fr); }
+  .driver .fields { grid-template-columns:1fr; }
+  label { display:flex; flex-direction:column; gap:4px; }
+  .inp { position:relative; }
+  .inp input { width:100%; background:#02060f; border:1px solid rgba(30,64,175,.8); border-radius:8px; color:#fff; font-family:"IBM Plex Mono",monospace; font-size:14px; padding:8px 44px 8px 12px; -moz-appearance:textfield; }
+  .inp input::-webkit-outer-spin-button,.inp input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .inp input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 1px var(--blue); }
+  .inp span { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--muted); pointer-events:none; }
+  .quick { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .hint { font-size:12px; line-height:1.6; color:var(--muted); margin:16px 0 0; }
+  .alert { display:flex; gap:8px; align-items:flex-start; border:1px solid rgba(249,115,22,.6); background:rgba(67,20,7,.25); border-radius:8px; padding:12px; font-size:14px; color:#fdba74; margin-bottom:16px; }
+  .belt-card { display:grid; grid-template-columns:1fr; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:20px; }
+  @media (min-width:768px){ .belt-card { grid-template-columns:repeat(3,1fr); } .belt-card > div + div { border-left:1px solid var(--line); } }
+  .belt-card > div { padding:20px; }
+  .belt-card .sel { background:rgba(23,37,84,.3); }
+  .big { font-family:"Outfit",sans-serif; font-size:48px; font-weight:900; letter-spacing:-.03em; line-height:1; }
+  .mid { font-family:"IBM Plex Mono",monospace; font-size:24px; }
+  .stock { display:inline-block; border:1px solid var(--blue); color:#93c5fd; border-radius:6px; padding:2px 8px; font-size:11px; margin-top:12px; }
+  .stock.no { border-color:#f97316; color:var(--orange); }
+  .alts { display:flex; flex-direction:column; gap:4px; margin-top:8px; }
+  .alts button { display:flex; justify-content:space-between; padding:6px 12px; font-size:12px; }
+  h2 { font-family:"Outfit",sans-serif; font-size:18px; font-weight:700; letter-spacing:-.01em; margin:20px 0 8px; }
+  .tbl { border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:8px 12px; background:rgba(0,0,0,.6); border-bottom:1px solid var(--line); font-weight:500; }
+  td { padding:8px 12px; border-bottom:1px solid var(--line2); font-family:"IBM Plex Mono",monospace; font-size:14px; }
+  tr:last-child td { border-bottom:none; }
+  tbody tr:hover td { background:var(--panel2); }
+  .r { text-align:right; }
+  .dim { color:var(--muted); } .b { color:var(--blue3); } .o { color:var(--orange); } .w { color:#fff; }
+  svg { width:100%; height:420px; display:block; border-radius:8px; }
+  .diagram { position:relative; padding:8px; }
+  .diagram .tag { position:absolute; left:16px; top:12px; display:flex; gap:12px; align-items:center; z-index:2; }
+  .saved li { list-style:none; display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.4); padding:8px 12px; margin-top:8px; }
+  .saved ul { padding:0; margin:0; }
+  .saved .nm { font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .saved .sub { font-size:11px; color:var(--muted); font-family:"IBM Plex Mono",monospace; }
+  .saved form { display:flex; gap:8px; margin-top:8px; }
+  .saved form .inp { flex:1; }
+  .saved form input { padding-right:12px; }
+  footer { font-size:12px; color:var(--muted2); padding-bottom:32px; }
+  .fade { animation:fade .35s ease-out both; }
+  @keyframes fade { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+    </div>
+    <div>
+      <h1 class="heading">Belt Calc</h1>
+      <div class="eyebrow">WCP HTD 5mm · one belt · 2 / 3 / 4 pulleys · 5T increments</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <main>
+    <section class="col">
+      <div class="panel" id="form"></div>
+      <div class="panel saved" id="saved"></div>
+    </section>
+    <section class="col">
+      <div class="panel diagram" id="diagram"></div>
+      <div class="panel" id="results"></div>
+    </section>
+  </main>
+  <footer>Pitch diameter = teeth × 5 mm / π. Belt pitch length = teeth × 5 mm. Driver pulley is fixed at the origin; FREE pulleys slide along their angle from the driver until the chosen belt fits exactly.</footer>
+</div>
+
+<script>
+// ---------- Geometry (HTD 5mm) ----------
+const PITCH = 5, MM_PER_IN = 25.4;
+const WCP_STOCK = new Set([...Array.from({length:35},(_,i)=>30+i*5), 210,220,225,230,240,250,260,270,280,290,300]);
+const WCP_PULLEYS = [12,15,18,24,30,36,42,48,60,72];
+const radiusMm = t => t * PITCH / (2 * Math.PI);
+
+function positions(pulleys, scale) {
+  const pos = [[0,0]];
+  for (let k = 1; k < pulleys.length; k++) {
+    const p = pulleys[k], d = p.locked ? p.distance : p.distance * scale, a = p.angle * Math.PI / 180;
+    pos.push([d * Math.cos(a), d * Math.sin(a)]);
+  }
+  return pos;
+}
+function tangent(pos, radii, i, j) {
+  const dx = pos[j][0]-pos[i][0], dy = pos[j][1]-pos[i][1], D = Math.hypot(dx,dy);
+  if (D <= Math.abs(radii[i]-radii[j]) + 1e-9) throw new Error(`Pulley ${i+1} and pulley ${j+1} overlap`);
+  const ux = dx/D, uy = dy/D, c = (radii[i]-radii[j])/D, s = Math.sqrt(Math.max(0,1-c*c));
+  const mx = c*ux + s*uy, my = c*uy - s*ux;
+  return { p1:[pos[i][0]+radii[i]*mx, pos[i][1]+radii[i]*my], p2:[pos[j][0]+radii[j]*mx, pos[j][1]+radii[j]*my], m:[mx,my], length:Math.sqrt(D*D-(radii[i]-radii[j])**2) };
+}
+function ccwOrder(pos, idx) {
+  const cx = idx.reduce((s,i)=>s+pos[i][0],0)/idx.length, cy = idx.reduce((s,i)=>s+pos[i][1],0)/idx.length;
+  return [...idx].sort((a,b)=>Math.atan2(pos[a][1]-cy,pos[a][0]-cx)-Math.atan2(pos[b][1]-cy,pos[b][0]-cx));
+}
+function contactSet(pos, radii) {
+  let active = pos.map((_,i)=>i);
+  while (active.length > 2) {
+    const order = ccwOrder(pos, active), n = order.length; let removed = null;
+    for (let k = 0; k < n; k++) {
+      const prev = order[(k-1+n)%n], cur = order[k], nxt = order[(k+1)%n];
+      const t = tangent(pos, radii, prev, nxt);
+      const signed = (pos[cur][0]-t.p1[0])*t.m[0] + (pos[cur][1]-t.p1[1])*t.m[1];
+      if (signed + radii[cur] < 1e-9) { removed = cur; break; }
+    }
+    if (removed === null) break;
+    active = active.filter(i=>i!==removed);
+  }
+  return active;
+}
+function beltGeometry(pos, radii) {
+  const active = contactSet(pos, radii), order = ccwOrder(pos, active), n = order.length;
+  const segs = [], mIn = {}, mOut = {};
+  for (let k = 0; k < n; k++) {
+    const i = order[k], j = order[(k+1)%n], t = tangent(pos, radii, i, j);
+    segs.push({ from:i, to:j, x1:t.p1[0], y1:t.p1[1], x2:t.p2[0], y2:t.p2[1], length:t.length });
+    const ang = Math.atan2(t.m[1], t.m[0]); mOut[i] = ang; mIn[j] = ang;
+  }
+  let total = segs.reduce((s,x)=>s+x.length,0); const arcs = [];
+  for (const i of order) {
+    const wrap = ((mOut[i]-mIn[i]) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+    arcs.push({ pulley:i, r:radii[i], wrap }); total += radii[i]*wrap;
+  }
+  return { total, segs, arcs, order, active };
+}
+function solveScale(pulleys, radii, target) {
+  const f = s => beltGeometry(positions(pulleys, s), radii).total - target;
+  let lo = 0.05, hi = 20;
+  try { if (f(lo) > 0 || f(hi) < 0) return null; } catch { return null; }
+  for (let k = 0; k < 80; k++) { const mid = (lo+hi)/2; try { if (f(mid) > 0) hi = mid; else lo = mid; } catch { lo = mid; } }
+  return (lo+hi)/2;
+}
+function calculate(pulleysIn, beltTeeth) {
+  let pulleys = pulleysIn.map(p=>({...p})); const warnings = [];
+  if (pulleys.slice(1).every(p=>p.locked)) { pulleys.slice(1).forEach(p=>p.locked=false); warnings.push("All pulleys were locked; unlocked all so the belt can be fit."); }
+  const radii = pulleys.map(p=>radiusMm(p.teeth));
+  const rawLen = beltGeometry(positions(pulleys,1), radii).total;
+  const nearest = Math.max(10, Math.round(rawLen/PITCH/5)*5), chosen = beltTeeth || nearest, targetLen = chosen*PITCH;
+  const scale = solveScale(pulleys, radii, targetLen);
+  if (scale === null) throw new Error(`A ${chosen}T belt cannot be fit by moving the unlocked pulleys. Try a different belt or unlock a pulley.`);
+  const pos = positions(pulleys, scale), g = beltGeometry(pos, radii);
+  pos.forEach((_,i)=>{ if (!g.active.includes(i)) warnings.push(`Pulley ${i+1} sits inside the belt path and does not contact the belt (layout is not convex).`); });
+  for (let i = 0; i < pos.length; i++) for (let j = i+1; j < pos.length; j++) { const d = Math.hypot(pos[i][0]-pos[j][0], pos[i][1]-pos[j][1]); if (d < radii[i]+radii[j]) warnings.push(`Pulley ${i+1} and pulley ${j+1} overlap (${d.toFixed(2)} mm apart, need ${(radii[i]+radii[j]).toFixed(2)} mm).`); }
+  if (!WCP_STOCK.has(chosen)) warnings.push(`${chosen}T is not a standard WCP stock length.`);
+  const outP = pulleys.map((p,i)=>{ const actual = Math.hypot(pos[i][0],pos[i][1]); const arc = g.arcs.find(a=>a.pulley===i);
+    return { index:i, teeth:p.teeth, radius:radii[i], pd:radii[i]*2, x:pos[i][0], y:pos[i][1], target:p.distance, actual, delta:actual-p.distance, locked:i>0&&p.locked, inContact:g.active.includes(i), wrapDeg:arc?arc.wrap*180/Math.PI:0 }; });
+  const pairs = []; for (let i = 0; i < pos.length; i++) for (let j = i+1; j < pos.length; j++) pairs.push({ a:i, b:j, d:Math.hypot(pos[i][0]-pos[j][0], pos[i][1]-pos[j][1]) });
+  const alternates = [nearest-10, nearest-5, nearest, nearest+5, nearest+10].filter(t=>t>=10).map(t=>{ const s = solveScale(pulleys, radii, t*PITCH); return { teeth:t, scale:s, fits:s!==null, stock:WCP_STOCK.has(t), nearest:t===nearest }; });
+  return { belt:{ teeth:chosen, length:targetLen, stock:WCP_STOCK.has(chosen), override:!!beltTeeth }, rawLen, rawTeeth:rawLen/PITCH, scale, pulleys:outP, pairs, path:g, alternates, warnings };
+}
+
+// ---------- State ----------
+const DEFAULTS = [
+  { teeth:"24", distance:"", angle:"0", locked:false },
+  { teeth:"24", distance:"6", angle:"0", locked:false },
+  { teeth:"18", distance:"8.485", angle:"45", locked:false },
+  { teeth:"18", distance:"6", angle:"90", locked:false },
+];
+const state = { count:3, units:"in", override:null, pulleys:DEFAULTS.map(p=>({...p})) };
+const toMm = v => state.units==="in" ? v*MM_PER_IN : v;
+const fmt = (mm, u=state.units, d) => (u==="in" ? mm/MM_PER_IN : mm).toFixed(d ?? (u==="in"?3:2));
+const fmtBoth = mm => `${(mm/MM_PER_IN).toFixed(3)} in / ${mm.toFixed(2)} mm`;
+const pct = s => ((s-1)*100 >= 0 ? "+" : "") + ((s-1)*100).toFixed(2) + "%";
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------- Form ----------
+function renderForm() {
+  const seg = (vals, cur, attr) => vals.map(v=>`<button class="${v===cur?'on':''}" data-${attr}="${v}">${v}</button>`).join("");
+  let html = `<div class="row">
+    <div><div class="eyebrow">Pulleys on belt</div><div class="seg">${seg([2,3,4], state.count, "count")}</div></div>
+    <div><div class="eyebrow">Units</div><div class="seg">${seg(["in","mm"], state.units, "units")}</div></div>
+  </div>`;
+  for (let i = 0; i < state.count; i++) {
+    const p = state.pulleys[i], drv = i===0;
+    html += `<div class="pulley ${drv?'driver':''}">
+      <div class="pulley-head"><div class="name"><span class="badge">${i+1}</span>${drv?"DRIVER PULLEY":"PULLEY "+(i+1)}</div>
+        ${drv?"":`<button class="lock ${p.locked?'locked':''}" data-lock="${i}" title="${p.locked?'Position fixed — will not move':'Free — will move to fit belt'}">${p.locked?"🔒 LOCKED":"FREE"}</button>`}</div>
+      <div class="fields">
+        <label><span class="eyebrow">Teeth</span><div class="inp"><input type="number" step="1" min="8" data-i="${i}" data-f="teeth" value="${esc(p.teeth)}"><span>T</span></div></label>
+        ${drv?"":`<label><span class="eyebrow">Target C-C</span><div class="inp"><input type="number" step="any" data-i="${i}" data-f="distance" value="${esc(p.distance)}"><span>${state.units}</span></div></label>
+        <label><span class="eyebrow">Angle</span><div class="inp"><input type="number" step="any" data-i="${i}" data-f="angle" value="${esc(p.angle)}"><span>°</span></div></label>`}
+      </div>
+      ${drv?`<div class="quick">${WCP_PULLEYS.map(t=>`<button class="tiny ${String(t)===p.teeth?'on':''}" data-quick="${t}">${t}T</button>`).join("")}</div>`:""}
+    </div>`;
+  }
+  html += `<p class="hint">Angle is measured from the driver, counter-clockwise from +X. FREE pulleys slide along their angle to hit the belt exactly; LOCKED pulleys stay where you put them.</p>`;
+  const el = document.getElementById("form"); el.innerHTML = html;
+  el.querySelectorAll("[data-count]").forEach(b=>b.onclick=()=>{ state.count=+b.dataset.count; state.override=null; renderForm(); renderResults(); });
+  el.querySelectorAll("[data-units]").forEach(b=>b.onclick=()=>switchUnits(b.dataset.units));
+  el.querySelectorAll("[data-lock]").forEach(b=>b.onclick=()=>{ const p=state.pulleys[+b.dataset.lock]; p.locked=!p.locked; renderForm(); renderResults(); });
+  el.querySelectorAll("[data-quick]").forEach(b=>b.onclick=()=>{ state.pulleys[0].teeth=b.dataset.quick; renderForm(); renderResults(); });
+  el.querySelectorAll("input").forEach(inp=>inp.oninput=()=>{ state.pulleys[+inp.dataset.i][inp.dataset.f]=inp.value; renderResults(); });
+}
+function switchUnits(u) {
+  if (u === state.units) return;
+  const f = u==="in" ? 1/MM_PER_IN : MM_PER_IN;
+  state.pulleys.forEach(p=>{ if (p.distance!=="") p.distance=(parseFloat(p.distance)*f).toFixed(u==="in"?3:2); });
+  state.units = u; renderForm(); renderResults();
+}
+
+// ---------- Results ----------
+let lastResult = null;
+function renderResults() {
+  const res = document.getElementById("results"), dia = document.getElementById("diagram");
+  const parsed = state.pulleys.slice(0, state.count).map((p,i)=>({ teeth:parseInt(p.teeth,10), distance:i===0?0:toMm(parseFloat(p.distance)), angle:i===0?0:(parseFloat(p.angle)||0), locked:i>0&&p.locked }));
+  const valid = parsed.every((p,i)=>Number.isFinite(p.teeth)&&p.teeth>=8&&(i===0||(Number.isFinite(p.distance)&&p.distance>0)));
+  if (!valid) { res.innerHTML = alert("Enter a tooth count for every pulley and a target distance greater than 0 for every non-driver pulley."); renderDiagram(null); return; }
+  let r; try { r = calculate(parsed, state.override); } catch (e) { res.innerHTML = alert(e.message); renderDiagram(null); return; }
+  lastResult = r;
+  const alts = r.alternates.map(a=>`<button ${a.fits?"":"disabled"} class="${a.teeth===r.belt.teeth?'on':''}" data-alt="${a.teeth}"><span>${a.teeth}T${a.nearest?' <span class="dim">nearest</span>':''}</span><span>${a.fits?pct(a.scale):"no fit"}${a.stock?"":" ·non-stock"}</span></button>`).join("");
+  const pairs = r.pairs.map(pr=>`<tr><td><span class="${pr.a===0?'b':''}">${pr.a===0?"DRIVER":"P"+(pr.a+1)}</span> <span class="dim">→</span> P${pr.b+1} <span class="dim">(${r.pulleys[pr.a].teeth}T–${r.pulleys[pr.b].teeth}T)</span></td><td class="r w">${(pr.d/MM_PER_IN).toFixed(3)}</td><td class="r dim">${pr.d.toFixed(2)}</td></tr>`).join("");
+  const u = state.units;
+  const rows = r.pulleys.map(p=>`<tr><td><span class="${p.index===0?'b':''}">${p.index===0?"DRIVER":"P"+(p.index+1)}</span> <span class="dim">${p.teeth}T${p.locked?" · locked":""}</span></td>
+    <td class="r">${fmt(p.pd)}</td><td class="r">${p.index===0?"—":fmt(p.target)}</td><td class="r w">${p.index===0?"—":fmt(p.actual)}</td>
+    <td class="r ${Math.abs(p.delta)>0.01?'o':'dim'}">${p.index===0?"—":(p.delta>=0?"+":"")+fmt(p.delta)}</td><td class="r">${fmt(p.x)}</td><td class="r">${fmt(p.y)}</td>
+    <td class="r ${p.inContact?'':'o'}">${p.inContact?p.wrapDeg.toFixed(1)+"°":"none"}</td></tr>`).join("");
+  res.innerHTML = `<div class="fade">${r.warnings.map(alert).join("")}
+    <div class="belt-card">
+      <div class="sel"><div class="eyebrow">Selected WCP belt</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span class="big">${r.belt.teeth}T</span><span class="mono dim" style="font-size:13px">HTD 5mm</span></div>
+        <div class="mono dim" style="font-size:13px;margin-top:8px">${fmtBoth(r.belt.length)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="stock ${r.belt.stock?'':'no'}">${r.belt.stock?"WCP STOCK LENGTH":"NON-STOCK LENGTH"}</span>${r.belt.override?'<button class="tiny" id="reset" style="margin-top:12px">↺ NEAREST</button>':""}</div></div>
+      <div><div class="eyebrow">Target layout needs</div><div class="mid" style="margin-top:4px">${r.rawTeeth.toFixed(2)}T</div><div class="mono dim" style="font-size:12px">${fmtBoth(r.rawLen)}</div>
+        <div class="eyebrow" style="margin-top:16px">Free pulleys scaled</div><div class="mid ${Math.abs(r.scale-1)>0.05?'o':''}">${pct(r.scale)}</div></div>
+      <div><div class="eyebrow">Other belts (click to fit)</div><div class="alts">${alts}</div></div>
+    </div>
+    <h2>Center-to-center distances (every pair)</h2>
+    <div class="tbl"><table><thead><tr><th class="eyebrow">Pulleys</th><th class="eyebrow r">C-C (in)</th><th class="eyebrow r">C-C (mm)</th></tr></thead><tbody>${pairs}</tbody></table></div>
+    <h2>Pulley positions (driver at origin)</h2>
+    <div class="tbl" style="overflow-x:auto"><table><thead><tr><th class="eyebrow">Pulley</th><th class="eyebrow r">Pitch Ø (${u})</th><th class="eyebrow r">Target (${u})</th><th class="eyebrow r">Actual (${u})</th><th class="eyebrow r">Δ (${u})</th><th class="eyebrow r">X (${u})</th><th class="eyebrow r">Y (${u})</th><th class="eyebrow r">Wrap</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+  res.querySelectorAll("[data-alt]").forEach(b=>b.onclick=()=>{ state.override=+b.dataset.alt; renderResults(); });
+  const rs = document.getElementById("reset"); if (rs) rs.onclick=()=>{ state.override=null; renderResults(); };
+  renderDiagram(r);
+}
+const alert = m => `<div class="alert">⚠ ${esc(m)}</div>`;
+
+// ---------- Diagram ----------
+function renderDiagram(r) {
+  const el = document.getElementById("diagram");
+  if (!r) { el.innerHTML = `<div style="height:420px;display:flex;align-items:center;justify-content:center"><span class="eyebrow">Awaiting valid inputs</span></div>`; return; }
+  const P = r.pulleys, xs = P.flatMap(p=>[p.x-p.radius,p.x+p.radius]), ys = P.flatMap(p=>[-p.y-p.radius,-p.y+p.radius]);
+  const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const size = Math.max(maxX-minX, maxY-minY, 1), pad = size*0.18, fs = size*0.035;
+  const vb = `${minX-pad} ${minY-pad} ${maxX-minX+2*pad} ${maxY-minY+2*pad}`;
+  const { segs, arcs } = r.path, n = segs.length;
+  let d = `M ${segs[0].x1} ${-segs[0].y1}`;
+  for (let k = 0; k < n; k++) { const s = segs[k], nx = segs[(k+1)%n], a = arcs[(k+1)%n]; d += ` L ${s.x2} ${-s.y2} A ${a.r} ${a.r} 0 ${a.wrap>Math.PI?1:0} 0 ${nx.x1} ${-nx.y1}`; }
+  const pairs = r.pairs.map(pr=>{ const a=P[pr.a], b=P[pr.b], mx=(a.x+b.x)/2, my=-(a.y+b.y)/2;
+    return `<line x1="${a.x}" y1="${-a.y}" x2="${b.x}" y2="${-b.y}" stroke="rgba(96,165,250,.45)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+    <rect x="${mx-fs*2.8}" y="${my-fs*0.65}" width="${fs*5.6}" height="${fs*1.3}" fill="#071226" stroke="rgba(30,58,138,.7)" vector-effect="non-scaling-stroke"/>
+    <text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${fs*0.85}" fill="#bfdbfe" font-family="IBM Plex Mono,monospace">${fmt(pr.d)} ${state.units}</text>`; }).join("");
+  const circles = P.map(p=>`<g><circle cx="${p.x}" cy="${-p.y}" r="${p.radius}" fill="${p.index===0?'#0c1f4a':'#0d1a36'}" stroke="${p.inContact?(p.index===0?'#60a5fa':'#1d4ed8'):'#fb923c'}" stroke-width="2" ${p.inContact?'':'stroke-dasharray="4 3"'} vector-effect="non-scaling-stroke"/>
+    <circle cx="${p.x}" cy="${-p.y}" r="${p.radius*0.12}" fill="#3b82f6"/>
+    <text x="${p.x}" y="${-p.y-p.radius*0.35}" text-anchor="middle" dominant-baseline="central" font-size="${fs*0.9}" font-weight="700" fill="#fff" font-family="Outfit,sans-serif">${p.teeth}T</text>
+    <text x="${p.x}" y="${-p.y+p.radius*0.4}" text-anchor="middle" dominant-baseline="central" font-size="${fs*0.6}" fill="#93c5fd" font-family="IBM Plex Mono,monospace">${p.index===0?"DRIVER":"P"+(p.index+1)}</text></g>`).join("");
+  el.innerHTML = `<div class="tag"><span class="eyebrow">Top-down layout</span><span class="mono" style="font-size:12px;color:#93c5fd">${r.belt.teeth}T belt</span></div>
+  <svg viewBox="${vb}" class="fade"><defs><pattern id="grid" width="${size/10}" height="${size/10}" patternUnits="userSpaceOnUse"><path d="M ${size/10} 0 L 0 0 0 ${size/10}" fill="none" stroke="rgba(30,58,138,.25)" vector-effect="non-scaling-stroke"/></pattern></defs>
+  <rect x="${minX-pad}" y="${minY-pad}" width="${maxX-minX+2*pad}" height="${maxY-minY+2*pad}" fill="url(#grid)"/>${pairs}
+  <path d="${d} Z" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>${circles}</svg>`;
+}
+
+// ---------- Saved layouts (browser localStorage) ----------
+const KEY = "beltcalc.saved";
+const loadSaved = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+const storeSaved = list => { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {} };
+function renderSaved() {
+  const list = loadSaved(), el = document.getElementById("saved");
+  el.innerHTML = `<div class="eyebrow">Saved calculations</div>
+    <form><div class="inp"><input id="savename" placeholder="${lastResult?`e.g. Intake ${lastResult.belt.teeth}T run`:"Name this layout"}" maxlength="80"></div><button class="primary" type="submit">Save</button></form>
+    ${list.length ? `<ul>${list.map((c,i)=>`<li><div style="min-width:0"><div class="nm">${esc(c.name)}</div><div class="sub">${c.count} pulleys${c.beltTeeth?` · ${c.beltTeeth}T belt`:""} · ${new Date(c.created).toLocaleDateString()}</div></div>
+      <div style="display:flex;gap:4px;flex-shrink:0"><button class="tiny" data-load="${i}" title="Load">Load</button><button class="tiny" data-del="${i}" title="Delete">✕</button></div></li>`).join("")}</ul>` : `<p class="hint" style="margin-top:8px">No saved layouts yet (stored in this browser).</p>`}`;
+  el.querySelector("form").onsubmit = e => { e.preventDefault(); const name = document.getElementById("savename").value.trim(); if (!name) return;
+    list.unshift({ name, created:Date.now(), count:state.count, units:state.units, pulleys:state.pulleys.map(p=>({...p})), override:state.override, beltTeeth:lastResult?.belt.teeth ?? null });
+    storeSaved(list); renderSaved(); };
+  el.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{ const c = list[+b.dataset.load]; state.count=c.count; state.units=c.units; state.override=c.override??null; state.pulleys=c.pulleys.map(p=>({...p})); while (state.pulleys.length<4) state.pulleys.push({...DEFAULTS[state.pulleys.length]}); renderForm(); renderResults(); });
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.del,1); storeSaved(list); renderSaved(); });
+}
+
+renderForm(); renderResults(); renderSaved();
+</script>
+</body>
+</html>
